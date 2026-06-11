@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Catalog{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+  <div>
+    <h1 style="font-family:var(--font-mono);font-size:18px;font-weight:700;letter-spacing:2px;">
+      <i class="bi bi-collection-fill" style="color:var(--accent);"></i> CATALOG
+    </h1>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">{{ courses|length }} published course{% if courses|length != 1 %}s{% endif %}</div>
+  </div>
+  <a href="{{ url_for('courses.new_course') }}" class="ma-btn ma-btn-primary ma-btn-sm">
+    <i class="bi bi-plus-circle-fill"></i> New Course
+  </a>
+</div>
+
+{% if courses %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">
+    {% for course in courses %}
+    <div class="course-card">
+      <div class="course-card-title">
+        <a href="{{ url_for('courses.view_course', slug=course.slug) }}">{{ course.title }}</a>
+      </div>
+      {% if course.description %}
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">
+        {{ course.description[:100] }}{% if course.description|length > 100 %}…{% endif %}
+      </div>
+      {% endif %}
+      <div class="course-card-meta">
+        <span><i class="bi bi-person-fill"></i> {{ course.author.display_name or course.author.username }}</span>
+        {% if course.category %}<span><i class="bi bi-tag-fill"></i> {{ course.category }}</span>{% endif %}
+        <span><i class="bi bi-layers-fill"></i> {{ course.modules|length }} modules</span>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+        {% for tag in course.tag_list()[:4] %}
+        <span class="ma-badge" style="font-size:10px;">{{ tag }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+    <i class="bi bi-collection" style="font-size:48px;display:block;margin-bottom:16px;"></i>
+    No courses published yet.
+    <a href="{{ url_for('courses.new_course') }}" style="display:block;margin-top:10px;">Create the first one →</a>
+  </div>
+{% endif %}
+{% endblock %}

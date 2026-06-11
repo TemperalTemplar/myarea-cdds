@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}New Course{% endblock %}
+
+{% block content %}
+<div class="ma-breadcrumb">
+  <a href="{{ url_for('main.index') }}">Home</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <span>New Course</span>
+</div>
+
+<div style="max-width:700px;">
+  <div class="ma-card">
+    <div class="ma-card-header">
+      <i class="bi bi-plus-circle-fill" style="color:var(--accent);"></i>
+      Create New Course
+    </div>
+    <div class="ma-card-body">
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="ma-form-group">
+          <label class="ma-label">Course Title *</label>
+          <input type="text" name="title" class="ma-input" placeholder="e.g. Merit Badge: First Aid" required>
+        </div>
+
+        <div class="ma-form-group">
+          <label class="ma-label">Description</label>
+          <textarea name="description" class="ma-input ma-textarea" placeholder="What will learners gain from this course?"></textarea>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="ma-form-group">
+            <label class="ma-label">Category</label>
+            <input type="text" name="category" class="ma-input" placeholder="e.g. Scouting, Faith, Skills">
+          </div>
+          <div class="ma-form-group">
+            <label class="ma-label">Version</label>
+            <input type="text" name="version" class="ma-input" placeholder="1.0.0" value="1.0.0">
+          </div>
+        </div>
+
+        <div class="ma-form-group">
+          <label class="ma-label">Tags <span style="color:var(--text-muted);">(comma separated)</span></label>
+          <input type="text" name="tags" class="ma-input" placeholder="first aid, emergency, safety">
+        </div>
+
+        <div class="ma-form-group">
+          <label class="ma-label">License <span style="color:var(--text-muted);">(optional — decorative only)</span></label>
+          <input type="text" name="license" class="ma-input" placeholder="e.g. CC BY-NC-SA 4.0">
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+          <a href="{{ url_for('main.index') }}" class="ma-btn ma-btn-ghost">Cancel</a>
+          <button type="submit" class="ma-btn ma-btn-primary">
+            <i class="bi bi-plus-circle-fill"></i> Create Course
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

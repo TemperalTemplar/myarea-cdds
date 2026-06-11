@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Edit Module: {{ module.title }}{% endblock %}
+
+{% block content %}
+<div class="ma-breadcrumb">
+  <a href="{{ url_for('main.index') }}">Home</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <a href="{{ url_for('courses.edit_course', slug=course.slug) }}">{{ course.title }}</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <span>Module {{ module.position }}: {{ module.title }}</span>
+</div>
+
+<div style="max-width:800px;">
+  <div class="ma-card">
+    <div class="ma-card-header">
+      <i class="bi bi-file-text-fill" style="color:var(--cyan);"></i>
+      Edit Module
+    </div>
+    <div class="ma-card-body">
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="ma-form-group">
+          <label class="ma-label">Module Title</label>
+          <input type="text" name="title" class="ma-input" value="{{ module.title }}" required>
+        </div>
+
+        <div class="ma-form-group">
+          <label class="ma-label">Content <span style="color:var(--text-muted);">(Markdown)</span></label>
+          <textarea name="content" class="ma-input ma-textarea" style="min-height:300px;font-family:var(--font-mono);">{{ module.content or '' }}</textarea>
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <a href="{{ url_for('courses.edit_course', slug=course.slug) }}" class="ma-btn ma-btn-ghost">Cancel</a>
+          <button type="submit" class="ma-btn ma-btn-primary">
+            <i class="bi bi-check-circle-fill"></i> Save Module
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Issue Federation Token{% endblock %}
+
+{% block content %}
+<div class="ma-breadcrumb">
+  <a href="{{ url_for('admin.index') }}">Admin</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <span>Issue Token</span>
+</div>
+
+<div style="max-width:600px;">
+  <div class="ma-card">
+    <div class="ma-card-header">
+      <i class="bi bi-key-fill" style="color:var(--cyan);"></i>
+      Issue Federation Token
+    </div>
+    <div class="ma-card-body">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;">
+        Issue a token to a trusted LMS node. They will use this token to browse your catalog and pull packages.
+        Once a package is pulled it belongs to them permanently — tokens only control future access.
+      </p>
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="ma-form-group">
+          <label class="ma-label">Label * <span style="color:var(--text-muted);">(who is this for?)</span></label>
+          <input type="text" name="label" class="ma-input" placeholder="e.g. Grace Community Church LMS" required>
+        </div>
+
+        <div class="ma-form-group">
+          <label class="ma-label">Remote Node Name</label>
+          <input type="text" name="remote_node" class="ma-input" placeholder="e.g. lms.gracechurch.org">
+        </div>
+
+        <div class="ma-form-group">
+          <label class="ma-label">Remote URL</label>
+          <input type="text" name="remote_url" class="ma-input" placeholder="https://lms.gracechurch.org">
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+          <a href="{{ url_for('admin.index') }}" class="ma-btn ma-btn-ghost">Cancel</a>
+          <button type="submit" class="ma-btn ma-btn-primary">
+            <i class="bi bi-key-fill"></i> Issue Token
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

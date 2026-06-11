@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="ma-breadcrumb">
+  <a href="{{ url_for('main.index') }}">Home</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <a href="{{ url_for('main.catalog') }}">Catalog</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <span>{{ course.title }}</span>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 280px;gap:20px;">
+  <div>
+    <div class="ma-card">
+      <div class="ma-card-header">
+        <i class="bi bi-book-fill" style="color:var(--accent);"></i>
+        {{ course.title }}
+        <span class="ma-badge {% if course.is_published %}ma-badge-green{% else %}ma-badge-yellow{% endif %}" style="margin-left:auto;">
+          {% if course.is_published %}Published{% else %}Draft{% endif %}
+        </span>
+      </div>
+      <div class="ma-card-body">
+        {% if course.description %}
+        <p style="font-size:14px;color:var(--text-dim);margin-bottom:16px;">{{ course.description }}</p>
+        {% endif %}
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+          {% if course.category %}<span class="ma-badge ma-badge-cyan"><i class="bi bi-tag-fill"></i> {{ course.category }}</span>{% endif %}
+          <span class="ma-badge"><i class="bi bi-layers-fill"></i> v{{ course.version }}</span>
+          {% if course.license %}<span class="ma-badge"><i class="bi bi-shield-fill"></i> {{ course.license }}</span>{% endif %}
+          {% for tag in course.tag_list() %}<span class="ma-badge">{{ tag }}</span>{% endfor %}
+        </div>
+
+        <!-- Modules list -->
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Modules</div>
+        {% if course.modules %}
+          {% for module in course.modules %}
+          <div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text);">{{ module.position }}. {{ module.title }}</div>
+            {% if module.content %}
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">{{ module.content[:150] }}{% if module.content|length > 150 %}…{% endif %}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="color:var(--text-muted);font-size:13px;">No modules yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="ma-card">
+      <div class="ma-card-header"><i class="bi bi-person-fill" style="color:var(--accent);"></i> Author</div>
+      <div class="ma-card-body" style="font-size:13px;color:var(--text-dim);">
+        {{ course.author.display_name or course.author.username }}
+      </div>
+    </div>
+
+    {% if session.get('user_id') and (session.get('is_admin') or course.author_id == session.get('user_id')) %}
+    <div class="ma-card">
+      <div class="ma-card-header"><i class="bi bi-gear-fill" style="color:var(--text-muted);"></i> Actions</div>
+      <div class="ma-card-body" style="display:flex;flex-direction:column;gap:8px;">
+        <a href="{{ url_for('courses.edit_course', slug=course.slug) }}" class="ma-btn ma-btn-ghost" style="justify-content:center;">
+          <i class="bi bi-pencil-fill"></i> Edit Course
+        </a>
+        {% if course.is_published %}
+        <a href="{{ url_for('courses.download_package', slug=course.slug) }}" class="ma-btn ma-btn-ghost" style="justify-content:center;">
+          <i class="bi bi-download"></i> Download .cdpkg
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if course.package_hash %}
+    <div class="ma-card">
+      <div class="ma-card-header"><i class="bi bi-box-fill" style="color:var(--green);"></i> Package</div>
+      <div class="ma-card-body" style="font-size:11px;color:var(--text-dim);">
+        <div style="margin-bottom:6px;"><span style="color:var(--text-muted);">SHA-256:</span></div>
+        <div style="font-size:10px;word-break:break-all;color:var(--green);">{{ course.package_hash }}</div>
+        {% if course.package_size %}
+        <div style="margin-top:6px;"><span style="color:var(--text-muted);">Size:</span> {{ (course.package_size / 1024)|round(1) }} KB</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Edit: {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="ma-breadcrumb">
+  <a href="{{ url_for('main.index') }}">Home</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <a href="{{ url_for('courses.view_course', slug=course.slug) }}">{{ course.title }}</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <span>Edit</span>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+
+  <!-- Main edit -->
+  <div>
+    <div class="ma-card" style="margin-bottom:16px;">
+      <div class="ma-card-header">
+        <i class="bi bi-pencil-fill" style="color:var(--accent);"></i>
+        Course Details
+        {% if course.is_published %}
+          <span class="ma-badge ma-badge-green" style="margin-left:auto;">Published</span>
+        {% else %}
+          <span class="ma-badge ma-badge-yellow" style="margin-left:auto;">Draft</span>
+        {% endif %}
+      </div>
+      <div class="ma-card-body">
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="ma-form-group">
+            <label class="ma-label">Title</label>
+            <input type="text" name="title" class="ma-input" value="{{ course.title }}" required>
+          </div>
+
+          <div class="ma-form-group">
+            <label class="ma-label">Description</label>
+            <textarea name="description" class="ma-input ma-textarea">{{ course.description or '' }}</textarea>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="ma-form-group">
+              <label class="ma-label">Category</label>
+              <input type="text" name="category" class="ma-input" value="{{ course.category or '' }}">
+            </div>
+            <div class="ma-form-group">
+              <label class="ma-label">Version</label>
+              <input type="text" name="version" class="ma-input" value="{{ course.version }}">
+            </div>
+          </div>
+
+          <div class="ma-form-group">
+            <label class="ma-label">Tags</label>
+            <input type="text" name="tags" class="ma-input" value="{{ course.tags or '' }}">
+          </div>
+
+          <div class="ma-form-group">
+            <label class="ma-label">License</label>
+            <input type="text" name="license" class="ma-input" value="{{ course.license or '' }}">
+          </div>
+
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button type="submit" class="ma-btn ma-btn-primary">
+              <i class="bi bi-check-circle-fill"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modules -->
+    <div class="ma-card">
+      <div class="ma-card-header">
+        <i class="bi bi-layers-fill" style="color:var(--cyan);"></i>
+        Modules
+        <span style="color:var(--text-muted);font-size:11px;margin-left:4px;">{{ course.modules|length }} total</span>
+      </div>
+      <div style="padding:0;">
+        {% if course.modules %}
+          {% for module in course.modules %}
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);">
+            <span style="font-size:11px;color:var(--text-muted);min-width:24px;">{{ module.position }}</span>
+            <span style="flex:1;font-size:13px;">{{ module.title }}</span>
+            <a href="{{ url_for('courses.edit_module', slug=course.slug, module_id=module.id) }}"
+               class="ma-btn ma-btn-ghost ma-btn-sm">
+              <i class="bi bi-pencil-fill"></i> Edit
+            </a>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="padding:20px 16px;color:var(--text-muted);font-size:13px;">No modules yet.</div>
+        {% endif %}
+      </div>
+
+      <!-- Add module form -->
+      <div style="padding:14px 16px;border-top:1px solid var(--border);background:var(--bg3);">
+        <div style="font-size:12px;font-weight:700;margin-bottom:10px;color:var(--text-dim);">ADD MODULE</div>
+        <form method="POST" action="{{ url_for('courses.add_module', slug=course.slug) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="ma-form-group">
+            <input type="text" name="title" class="ma-input" placeholder="Module title" required>
+          </div>
+          <div class="ma-form-group">
+            <textarea name="content" class="ma-input ma-textarea" placeholder="Module content (Markdown supported)" style="min-height:80px;"></textarea>
+          </div>
+          <button type="submit" class="ma-btn ma-btn-ghost ma-btn-sm">
+            <i class="bi bi-plus-circle-fill"></i> Add Module
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div>
+    <div class="ma-card">
+      <div class="ma-card-header">
+        <i class="bi bi-box-fill" style="color:var(--green);"></i>
+        Package &amp; Publish
+      </div>
+      <div class="ma-card-body">
+        {% if course.package_hash %}
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
+          <div>SHA-256:</div>
+          <div style="font-size:10px;word-break:break-all;color:var(--green);margin-top:2px;">{{ course.package_hash }}</div>
+        </div>
+        {% if course.package_size %}
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">
+          Size: {{ (course.package_size / 1024)|round(1) }} KB
+        </div>
+        {% endif %}
+        <a href="{{ url_for('courses.download_package', slug=course.slug) }}" class="ma-btn ma-btn-ghost ma-btn-sm" style="width:100%;justify-content:center;margin-bottom:8px;">
+          <i class="bi bi-download"></i> Download .cdpkg
+        </a>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('courses.publish_course', slug=course.slug) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="ma-btn ma-btn-success" style="width:100%;justify-content:center;">
+            <i class="bi bi-send-fill"></i>
+            {% if course.is_published %}Rebuild &amp; Republish{% else %}Build &amp; Publish{% endif %}
+          </button>
+        </form>
+
+        <div style="font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.5;">
+          Publishing builds a signed <code>.cdpkg</code> and makes this course available to federated LMS nodes.
+        </div>
+      </div>
+    </div>
+
+    <div class="ma-card">
+      <div class="ma-card-header">
+        <i class="bi bi-info-circle-fill" style="color:var(--text-muted);"></i>
+        Info
+      </div>
+      <div class="ma-card-body" style="font-size:12px;color:var(--text-dim);">
+        <div style="margin-bottom:6px;"><span style="color:var(--text-muted);">UUID:</span> {{ course.uuid }}</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--text-muted);">Slug:</span> {{ course.slug }}</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--text-muted);">Author:</span> {{ course.author.display_name or course.author.username }}</div>
+        <div><span style="color:var(--text-muted);">Updated:</span> {{ course.updated_at.strftime('%b %d, %Y') if course.updated_at else '—' }}</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

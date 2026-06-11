@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" {% if session.get('theme') %}data-theme="{{ session.theme }}"{% endif %}>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}CDDS{% endblock %} | MyArea</title>
+  <link rel="icon" type="image/x-icon" href="https://apps.wrds361.com/static/favicon.ico">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:          #0d0f14;
+      --bg2:         #111520;
+      --bg3:         #161b28;
+      --border:      #1e2535;
+      --border2:     #2a3448;
+      --accent:      #e63946;
+      --accent2:     #ff4d5a;
+      --text:        #e8eaf0;
+      --text-dim:    #8899bb;
+      --text-muted:  #4a5a7a;
+      --font-display:'Archivo Black', sans-serif;
+      --font-mono:   'Space Mono', 'Courier New', monospace;
+      --green:       #00d4a0;
+      --yellow:      #f59e0b;
+      --purple:      #7c3aed;
+      --cyan:        #06b6d4;
+    }
+    [data-theme="light"] {
+      --bg:#f0f2f5; --bg2:#ffffff; --bg3:#e8eaed;
+      --border:#dde1e7; --border2:#c8cdd6;
+      --text:#111520; --text-dim:#444c5e; --text-muted:#7a8499;
+    }
+    [data-theme="high-contrast"] {
+      --bg:#000; --bg2:#0a0a0a; --bg3:#111;
+      --border:#fff; --border2:#fff;
+      --text:#fff; --text-dim:#ccc; --text-muted:#888;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-mono); font-size: 14px; line-height: 1.6; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent2); }
+
+    /* ── Nav ── */
+    .ma-nav { background: var(--bg2); border-bottom: 1px solid var(--border2); position: sticky; top: 0; z-index: 1000; }
+    .ma-nav-inner { display: flex; align-items: center; gap: 12px; max-width: 1200px; margin: 0 auto; padding: 0 16px; height: 52px; }
+    .ma-logo { font-family: var(--font-mono); font-size: 16px; font-weight: 700; letter-spacing: 3px; color: var(--accent); text-decoration: none; white-space: nowrap; }
+    .ma-logo span { color: var(--text-dim); }
+    .ma-logo:hover { color: var(--accent2); text-decoration: none; }
+    .ma-nav-links { display: flex; align-items: center; gap: 2px; flex: 1; overflow-x: auto; }
+    .ma-nav-link { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: 12px; color: var(--text-dim); text-decoration: none; white-space: nowrap; transition: all .15s; }
+    .ma-nav-link:hover, .ma-nav-link.active { background: rgba(230,57,70,.08); color: var(--text); text-decoration: none; }
+    .ma-nav-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+    .ma-icon-btn { background: transparent; border: 1px solid var(--border2); border-radius: 6px; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 15px; text-decoration: none; transition: all .15s; }
+    .ma-icon-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    /* ── Main ── */
+    .ma-main { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
+
+    /* ── Cards ── */
+    .ma-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; }
+    .ma-card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .ma-card-header .accent { color: var(--accent); }
+    .ma-card-body { padding: 16px; }
+
+    /* ── Buttons ── */
+    .ma-btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 12px; padding: 7px 14px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; transition: all .15s; text-decoration: none; }
+    .ma-btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .ma-btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+    .ma-btn-ghost { background: transparent; border-color: var(--border2); color: var(--text-dim); }
+    .ma-btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+    .ma-btn-danger { background: transparent; border-color: var(--accent); color: var(--accent); }
+    .ma-btn-danger:hover { background: var(--accent); color: #fff; }
+    .ma-btn-success { background: transparent; border-color: var(--green); color: var(--green); }
+    .ma-btn-success:hover { background: var(--green); color: #000; }
+    .ma-btn-sm { font-size: 11px; padding: 4px 10px; }
+
+    /* ── Forms ── */
+    .ma-input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); font-family: var(--font-mono); font-size: 13px; padding: 8px 12px; border-radius: 6px; outline: none; transition: border-color .15s; }
+    .ma-input:focus { border-color: var(--accent); }
+    .ma-textarea { resize: vertical; min-height: 120px; }
+    .ma-label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .05em; }
+    .ma-form-group { margin-bottom: 16px; }
+
+    /* ── Flash ── */
+    .ma-flash { padding: 8px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 13px; border-left: 3px solid; }
+    .ma-flash.success { border-color: var(--green); color: var(--green); background: rgba(0,212,160,.06); }
+    .ma-flash.warning { border-color: var(--yellow); color: var(--yellow); background: rgba(245,158,11,.06); }
+    .ma-flash.danger  { border-color: var(--accent); color: var(--accent); background: rgba(230,57,70,.06); }
+    .ma-flash.info    { border-color: var(--cyan); color: var(--cyan); background: rgba(6,182,212,.06); }
+
+    /* ── Badges ── */
+    .ma-badge { background: var(--bg3); border: 1px solid var(--border2); color: var(--text-dim); font-size: 10px; padding: 2px 7px; border-radius: 4px; }
+    .ma-badge-green { border-color: var(--green); color: var(--green); }
+    .ma-badge-yellow { border-color: var(--yellow); color: var(--yellow); }
+    .ma-badge-red { border-color: var(--accent); color: var(--accent); }
+    .ma-badge-cyan { border-color: var(--cyan); color: var(--cyan); }
+
+    /* ── Course card ── */
+    .course-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; transition: border-color .15s; }
+    .course-card:hover { border-color: var(--border2); }
+    .course-card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .course-card-title a:hover { color: var(--accent); }
+    .course-card-meta { font-size: 11px; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+    /* ── Breadcrumb ── */
+    .ma-breadcrumb { font-size: 12px; color: var(--text-muted); padding: 8px 0 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .ma-breadcrumb a { color: var(--text-dim); }
+    .ma-breadcrumb a:hover { color: var(--accent); }
+
+    /* ── Table ── */
+    .ma-table { width: 100%; border-collapse: collapse; }
+    .ma-table th { padding: 8px 12px; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; border-bottom: 1px solid var(--border); background: var(--bg3); text-align: left; font-weight: normal; }
+    .ma-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px; }
+    .ma-table tr:last-child td { border-bottom: none; }
+    .ma-table tr:hover td { background: var(--bg3); }
+
+    /* ── Footer ── */
+    .ma-footer { border-top: 1px solid var(--border); padding: 16px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-muted); max-width: 1200px; margin: 0 auto; flex-wrap: wrap; gap: 8px; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg2); } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+    ::selection { background: var(--accent); color: #fff; }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Top Nav ── -->
+<nav class="ma-nav">
+  <div class="ma-nav-inner">
+    <a href="/" class="ma-logo">CD<span>DS</span></a>
+
+    <div class="ma-nav-links">
+      <a href="{{ url_for('main.index') }}" class="ma-nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
+        <i class="bi bi-house-fill"></i> Home
+      </a>
+      <a href="{{ url_for('main.catalog') }}" class="ma-nav-link {% if request.endpoint == 'main.catalog' %}active{% endif %}">
+        <i class="bi bi-collection-fill"></i> Catalog
+      </a>
+      {% if session.get('user_id') %}
+      <a href="{{ url_for('courses.new_course') }}" class="ma-nav-link {% if request.endpoint == 'courses.new_course' %}active{% endif %}">
+        <i class="bi bi-plus-circle-fill"></i> New Course
+      </a>
+      {% endif %}
+      {% if session.get('is_admin') %}
+      <a href="{{ url_for('admin.index') }}" class="ma-nav-link {% if request.blueprint == 'admin' %}active{% endif %}">
+        <i class="bi bi-shield-fill"></i> Admin
+      </a>
+      {% endif %}
+    </div>
+
+    <div class="ma-nav-right">
+      <button onclick="toggleTheme()" id="ma-theme-btn" class="ma-icon-btn" title="Toggle theme">&#9790;</button>
+      <button onclick="toggleContrast()" class="ma-icon-btn" title="High contrast" style="font-size:10px;letter-spacing:1px;width:auto;padding:0 8px;">HC</button>
+
+      <!-- Bell + 9-dot injected by launcher.js -->
+
+      {% if session.get('user_id') %}
+      <div style="position:relative;display:inline-block" id="avatarWrap">
+        <button class="ma-icon-btn" id="avatarBtn" style="width:auto;padding:0 10px;gap:6px;font-size:12px;">
+          <i class="bi bi-person-fill"></i>
+          <span>{{ session.get('username', '') }}</span>
+          <i class="bi bi-chevron-down" style="font-size:9px;"></i>
+        </button>
+        <div id="avatarDrop" style="display:none;position:absolute;top:calc(100% + 8px);right:0;min-width:160px;background:#1a2030;border:1px solid #2a3448;border-radius:8px;z-index:9999;padding:6px 0;">
+          <hr style="border-color:#2a3448;margin:4px 0;">
+          <a href="{{ url_for('auth.logout') }}" style="display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;color:#e63946;text-decoration:none;font-family:'Courier New',monospace;">
+            <i class="bi bi-box-arrow-right"></i> Logout
+          </a>
+        </div>
+      </div>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="ma-btn ma-btn-primary ma-btn-sm">Login</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<!-- ── Flash messages ── -->
+<div style="max-width:1200px;margin:0 auto;padding:8px 16px 0;">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="ma-flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+<!-- ── Content ── -->
+<main class="ma-main">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ── Footer ── -->
+<footer class="ma-footer" style="max-width:1200px;margin:0 auto;">
+  <div>
+    <span style="font-family:'Courier New',monospace;letter-spacing:3px;color:#e63946;font-weight:700">CDDS</span>
+    <span style="margin-left:8px;">Course Development &amp; Distribution System &copy; 2026</span>
+  </div>
+  <div>
+    <a href="https://apps.wrds361.com" style="color:var(--text-muted);">apps.wrds361.com</a>
+    <span style="margin:0 8px;">·</span>
+    <span>SOVEREIGN · SELF-HOSTED</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+(function(){
+  var btn=document.getElementById('avatarBtn');
+  var dd=document.getElementById('avatarDrop');
+  if(!btn||!dd)return;
+  btn.addEventListener('click',function(e){e.stopPropagation();dd.style.display=dd.style.display==='block'?'none':'block';});
+  document.addEventListener('click',function(){if(dd)dd.style.display='none';});
+})();
+
+function toggleTheme(){
+  var cur=document.documentElement.getAttribute('data-theme');
+  var btn=document.getElementById('ma-theme-btn');
+  if(cur==='light'){document.documentElement.removeAttribute('data-theme');localStorage.removeItem('ma_cdds_theme');if(btn)btn.innerHTML='&#9790;';}
+  else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('ma_cdds_theme','light');if(btn)btn.innerHTML='&#9788;';}
+}
+function toggleContrast(){
+  var cur=document.documentElement.getAttribute('data-theme');
+  if(cur==='high-contrast'){document.documentElement.removeAttribute('data-theme');localStorage.removeItem('ma_cdds_theme');}
+  else{document.documentElement.setAttribute('data-theme','high-contrast');localStorage.setItem('ma_cdds_theme','high-contrast');}
+}
+(function(){
+  var t=localStorage.getItem('ma_cdds_theme');
+  if(t)document.documentElement.setAttribute('data-theme',t);
+  var btn=document.getElementById('ma-theme-btn');
+  if(btn&&t==='light')btn.innerHTML='&#9788;';
+})();
+
+function getCsrf(){var el=document.querySelector('meta[name="csrf-token"]');return el?el.getAttribute('content'):'';}
+</script>
+<script>window.MA_USER = "{{ session.get('sub', '') }}";</script>
+<script src="https://apps.wrds361.com/static/launcher.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
