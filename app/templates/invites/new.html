@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}New Invite{% endblock %}
+{% block content %}
+<div class="ma-breadcrumb">
+  <a href="{{ url_for('invites.index') }}">Invites</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <span>New Invite</span>
+</div>
+
+<div style="max-width:600px;">
+  <div class="ma-card">
+    <div class="ma-card-header">
+      <i class="bi bi-link-45deg" style="color:var(--accent);"></i>
+      Create Invite Link
+    </div>
+    <div class="ma-card-body">
+      <form method="POST" id="invite-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="ma-form-group">
+          <label class="ma-label">Label * <span style="color:var(--text-muted);">(who is this for?)</span></label>
+          <input type="text" name="label" class="ma-input"
+                 placeholder="e.g. Teachers — Spring 2026, Church Youth Group" required>
+        </div>
+
+        <div class="ma-form-group">
+          <label class="ma-label">Role to Grant</label>
+          <select name="role" class="ma-input">
+            <option value="author">Author</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="ma-form-group">
+          <label class="ma-label">Use Type</label>
+          <div style="display:flex;gap:12px;margin-top:6px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+              <input type="radio" name="use_type" value="single" checked
+                     onchange="toggleMulti(false)" style="accent-color:var(--accent);">
+              <span><strong>Single use</strong> — burns after one claim</span>
+            </label>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:8px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+              <input type="radio" name="use_type" value="multi"
+                     onchange="toggleMulti(true)" style="accent-color:var(--accent);">
+              <span><strong>Multi-use</strong> — multiple people can claim</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="multi-options" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:16px;">
+          <div class="ma-form-group" style="margin-bottom:0;">
+            <label class="ma-label">Max Claims <span style="color:var(--text-muted);">(leave blank for unlimited)</span></label>
+            <input type="number" name="max_uses" class="ma-input" min="2" placeholder="e.g. 30">
+          </div>
+        </div>
+
+        <div class="ma-form-group">
+          <label class="ma-label">Expires After <span style="color:var(--text-muted);">(days — leave blank for no expiry)</span></label>
+          <input type="number" name="expire_days" class="ma-input" min="1" placeholder="e.g. 30">
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <a href="{{ url_for('invites.index') }}" class="ma-btn ma-btn-ghost">Cancel</a>
+          <button type="submit" class="ma-btn ma-btn-primary">
+            <i class="bi bi-link-45deg"></i> Create Invite
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+function toggleMulti(show) {
+  document.getElementById('multi-options').style.display = show ? 'block' : 'none';
+}
+</script>
+{% endblock %}
+{% endblock %}

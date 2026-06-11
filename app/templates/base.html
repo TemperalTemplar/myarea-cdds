@@ -152,6 +152,9 @@
       <a href="{{ url_for('admin.index') }}" class="ma-nav-link {% if request.blueprint == 'admin' %}active{% endif %}">
         <i class="bi bi-shield-fill"></i> Admin
       </a>
+      <a href="{{ url_for('invites.index') }}" class="ma-nav-link {% if request.blueprint == 'invites' %}active{% endif %}">
+        <i class="bi bi-link-45deg"></i> Invites
+      </a>
       {% endif %}
     </div>
 

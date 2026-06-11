@@ -124,3 +124,55 @@ class IssueRecord(db.Model):
 
     def __repr__(self):
         return f"<IssueRecord course={self.course_id} at={self.issued_at}>"
+
+# ── Invite System ─────────────────────────────────────────────────────────
+
+class Invite(db.Model):
+    __tablename__ = "invites"
+
+    id           = db.Column(db.Integer, primary_key=True)
+    token        = db.Column(db.String(64), unique=True, nullable=False,
+                             default=lambda: str(uuid.uuid4()).replace("-","") +
+                                            str(uuid.uuid4()).replace("-","")[:8])
+    label        = db.Column(db.String(256), nullable=False)
+    # CDDS roles: author, admin
+    role         = db.Column(db.String(32), default="author", nullable=False)
+    max_uses     = db.Column(db.Integer, nullable=True)
+    uses         = db.Column(db.Integer, default=0, nullable=False)
+    expires_at   = db.Column(db.DateTime(timezone=True), nullable=True)
+    is_active    = db.Column(db.Boolean, default=True, nullable=False)
+    created_by_id= db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    created_at   = db.Column(db.DateTime(timezone=True), default=utcnow)
+
+    created_by   = db.relationship("User", foreign_keys=[created_by_id],
+                                   backref=db.backref("invites_created", lazy="dynamic"))
+    claims       = db.relationship("InviteClaim", back_populates="invite",
+                                   cascade="all, delete-orphan", lazy="dynamic")
+
+    def is_valid(self):
+        from datetime import datetime, timezone
+        if not self.is_active:
+            return False
+        if self.expires_at and datetime.now(timezone.utc) > self.expires_at:
+            return False
+        if self.max_uses is not None and self.uses >= self.max_uses:
+            return False
+        return True
+
+    def __repr__(self):
+        return f"<Invite {self.label} role={self.role}>"
+
+
+class InviteClaim(db.Model):
+    __tablename__ = "invite_claims"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    invite_id   = db.Column(db.Integer, db.ForeignKey("invites.id"), nullable=False)
+    user_id     = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    claimed_at  = db.Column(db.DateTime(timezone=True), default=utcnow)
+
+    invite      = db.relationship("Invite", back_populates="claims")
+    user        = db.relationship("User", backref=db.backref("invite_claims", lazy="dynamic"))
+
+    def __repr__(self):
+        return f"<InviteClaim invite={self.invite_id} user={self.user_id}>"

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Invites{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+  <h1 style="font-family:var(--font-mono);font-size:18px;font-weight:700;letter-spacing:2px;">
+    <i class="bi bi-link-45deg" style="color:var(--accent);"></i> INVITE LINKS
+  </h1>
+  <a href="{{ url_for('invites.new') }}" class="ma-btn ma-btn-primary ma-btn-sm">
+    <i class="bi bi-plus-circle-fill"></i> New Invite
+  </a>
+</div>
+
+<div class="ma-card">
+  <div style="overflow-x:auto;">
+    <table class="ma-table">
+      <thead>
+        <tr>
+          <th>Label</th>
+          <th>Role</th>
+          <th>Uses</th>
+          <th>Expires</th>
+          <th>Status</th>
+          <th>Link</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for invite in invites %}
+        {% set valid = invite.is_valid() %}
+        <tr>
+          <td style="font-weight:700;">{{ invite.label }}</td>
+          <td>
+            <span class="ma-badge {% if invite.role == 'admin' %}ma-badge-red{% elif invite.role == 'teacher' %}ma-badge-yellow{% else %}ma-badge-cyan{% endif %}">
+              {{ invite.role }}
+            </span>
+          </td>
+          <td style="text-align:center;">
+            {{ invite.uses }}{% if invite.max_uses %} / {{ invite.max_uses }}{% else %} / ∞{% endif %}
+          </td>
+          <td style="font-size:11px;color:var(--text-muted);">
+            {% if invite.expires_at %}
+              {% if invite.expires_at < now %}
+                <span style="color:var(--accent);">Expired {{ invite.expires_at.strftime('%b %d') }}</span>
+              {% else %}
+                {{ invite.expires_at.strftime('%b %d, %Y') }}
+              {% endif %}
+            {% else %}
+              No expiry
+            {% endif %}
+          </td>
+          <td>
+            {% if valid %}
+              <span class="ma-badge ma-badge-green">Active</span>
+            {% else %}
+              <span class="ma-badge ma-badge-red">Inactive</span>
+            {% endif %}
+          </td>
+          <td style="max-width:200px;">
+            {% if valid %}
+            <div style="display:flex;align-items:center;gap:6px;">
+              <input type="text" value="{{ config.SITE_URL }}/invites/join/{{ invite.token }}"
+                     class="ma-input" style="font-size:10px;padding:3px 6px;"
+                     id="link-{{ invite.id }}" readonly>
+              <button onclick="copyLink('{{ invite.id }}')" class="ma-btn ma-btn-ghost ma-btn-sm" title="Copy">
+                <i class="bi bi-clipboard-fill"></i>
+              </button>
+            </div>
+            {% else %}
+              <span style="font-size:11px;color:var(--text-muted);">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if invite.is_active %}
+            <form method="POST" action="{{ url_for('invites.revoke', invite_id=invite.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="ma-btn ma-btn-danger ma-btn-sm"
+                      onclick="return confirm('Revoke this invite? Existing claims are unaffected.')">
+                Revoke
+              </button>
+            </form>
+            {% else %}
+              <span style="font-size:11px;color:var(--text-muted);">Revoked</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px;">
+            No invites yet.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="ma-card" style="border-color:rgba(6,182,212,.3);">
+  <div class="ma-card-header" style="color:var(--cyan);">
+    <i class="bi bi-info-circle-fill"></i> How invite links work
+  </div>
+  <div class="ma-card-body" style="font-size:13px;color:var(--text-dim);line-height:1.8;">
+    <p>Share the invite link with the person you want to add. When they visit the link and log in via Authentik, their role is automatically set.</p>
+    <p><strong style="color:var(--text);">Single use</strong> — link works once then burns. Best for individual invites.</p>
+    <p><strong style="color:var(--text);">Multi-use</strong> — link works for multiple people. Set a max count or leave unlimited. Add an expiry date for time-limited access (e.g. a class registration period).</p>
+    <p>Revoking a link prevents future claims but does not change roles already granted.</p>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+function copyLink(id) {
+  var input = document.getElementById('link-' + id);
+  input.select();
+  document.execCommand('copy');
+  var btn = input.nextElementSibling;
+  btn.innerHTML = '<i class="bi bi-check-lg"></i>';
+  setTimeout(function(){ btn.innerHTML = '<i class="bi bi-clipboard-fill"></i>'; }, 2000);
+}
+</script>
+{% endblock %}
+{% endblock %}

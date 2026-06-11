@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Import Course{% endblock %}
+{% block content %}
+<div class="ma-breadcrumb">
+  <a href="{{ url_for('main.index') }}">Home</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <span>Import Course</span>
+</div>
+<div style="max-width:700px;">
+  <div class="ma-card">
+    <div class="ma-card-header">
+      <i class="bi bi-box-arrow-in-down-fill" style="color:var(--accent);"></i>
+      Import Course from ZIP
+    </div>
+    <div class="ma-card-body">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;">
+        Upload a <code>.zip</code> or <code>.cdpkg</code> containing course content.
+        Each .md / .txt / .html file becomes a module. The course is created as a draft ready to edit and publish.
+      </p>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:20px;font-size:12px;color:var(--text-dim);">
+        <div style="font-weight:700;color:var(--text);margin-bottom:8px;">Supported:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div><span style="color:var(--cyan);">.zip / .cdpkg</span> — any zip of content</div>
+          <div><span style="color:var(--green);">.md · .txt · .html</span> — become modules</div>
+          <div><span style="color:var(--yellow);">manifest.json</span> — optional metadata</div>
+          <div><span style="color:var(--text-muted);">Alphabetical</span> — file order = module order</div>
+        </div>
+      </div>
+      <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="ma-form-group">
+          <label class="ma-label">Course Package *</label>
+          <input type="file" name="package" class="ma-input" accept=".zip,.cdpkg" required style="padding:6px;">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <a href="{{ url_for('main.index') }}" class="ma-btn ma-btn-ghost">Cancel</a>
+          <button type="submit" class="ma-btn ma-btn-primary">
+            <i class="bi bi-box-arrow-in-down-fill"></i> Import
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="ma-card" style="border-color:rgba(6,182,212,.3);">
+    <div class="ma-card-header" style="color:var(--cyan);"><i class="bi bi-info-circle-fill"></i> manifest.json (optional)</div>
+    <div class="ma-card-body">
+      <pre style="font-size:11px;color:var(--text-dim);background:var(--bg3);padding:12px;border-radius:6px;overflow-x:auto;">{"title":"First Aid Basics","description":"Intro to first aid","category":"Scouting","tags":["first aid","safety"],"version":"1.0.0","license":"CC BY-NC-SA 4.0"}</pre>
+    </div>
+  </div>
+</div>
+{% endblock %}

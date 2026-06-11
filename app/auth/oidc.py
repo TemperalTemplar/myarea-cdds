@@ -1,13 +1,13 @@
-import os
+from functools import wraps
+from datetime import datetime, timezone
 from flask import (Blueprint, redirect, url_for, session,
                    request, current_app, flash)
 from authlib.integrations.flask_client import OAuth
 from ..models import User
 from .. import db
-from datetime import datetime, timezone
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
-oauth = OAuth()
+oauth   = OAuth()
 
 
 def init_oauth(app):
@@ -28,13 +28,15 @@ def on_load(state):
 
 @auth_bp.route("/login")
 def login():
-    redirect_uri = current_app.config["OIDC_REDIRECT_URI"]
-    return oauth.authentik.authorize_redirect(redirect_uri)
+    invite_token = request.args.get("invite")
+    if invite_token:
+        session["pending_invite"] = invite_token
+    return oauth.authentik.authorize_redirect(current_app.config["OIDC_REDIRECT_URI"])
 
 
 @auth_bp.route("/oidc/callback")
 def oidc_callback():
-    token = oauth.authentik.authorize_access_token()
+    token    = oauth.authentik.authorize_access_token()
     userinfo = token.get("userinfo") or oauth.authentik.userinfo()
 
     sub          = userinfo.get("sub", "")
@@ -43,26 +45,41 @@ def oidc_callback():
     display_name = userinfo.get("name", username)
 
     user = User.query.filter_by(authentik_sub=sub).first()
+    is_new = user is None
+
     if not user:
-        user = User(
-            authentik_sub=sub,
-            username=username,
-            email=email,
-            display_name=display_name,
-        )
+        user = User(authentik_sub=sub, username=username,
+                    email=email, display_name=display_name)
         db.session.add(user)
+        db.session.flush()
     else:
         user.username     = username
         user.email        = email
         user.display_name = display_name
         user.last_seen    = datetime.now(timezone.utc)
 
+    # ── First-run bootstrap ───────────────────────────────────────────────
+    if is_new and User.query.filter_by(is_admin=True).count() == 0:
+        user.is_admin = True
+        db.session.commit()
+        session["user_id"]  = user.id
+        session["username"] = user.username
+        session["is_admin"] = user.is_admin
+        session["sub"]      = sub
+        flash("Welcome! You are the first user — you have been made admin.", "success")
+        return redirect(url_for("main.index"))
+
     db.session.commit()
 
-    session["user_id"]   = user.id
-    session["username"]  = user.username
-    session["is_admin"]  = user.is_admin
-    session["sub"]       = sub
+    session["user_id"]  = user.id
+    session["username"] = user.username
+    session["is_admin"] = user.is_admin
+    session["sub"]      = sub
+
+    # ── Invite claim ──────────────────────────────────────────────────────
+    pending = session.pop("pending_invite", None)
+    if pending:
+        return redirect(url_for("invites.claim", token=pending))
 
     return redirect(url_for("main.index"))
 
@@ -74,7 +91,6 @@ def logout():
 
 
 def login_required(f):
-    from functools import wraps
     @wraps(f)
     def decorated(*args, **kwargs):
         if "user_id" not in session:
@@ -84,7 +100,6 @@ def login_required(f):
 
 
 def admin_required(f):
-    from functools import wraps
     @wraps(f)
     def decorated(*args, **kwargs):
         if "user_id" not in session:
