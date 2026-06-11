@@ -155,6 +155,9 @@
       <a href="{{ url_for('invites.index') }}" class="ma-nav-link {% if request.blueprint == 'invites' %}active{% endif %}">
         <i class="bi bi-link-45deg"></i> Invites
       </a>
+      <a href="{{ url_for('merit_badge.import_worksheet') }}" class="ma-nav-link {% if request.blueprint == 'merit_badge' %}active{% endif %}">
+        <i class="bi bi-patch-check-fill"></i> Merit Badge
+      </a>
       {% endif %}
     </div>
 

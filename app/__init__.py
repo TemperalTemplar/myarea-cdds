@@ -59,9 +59,10 @@ def create_app():
     from .routes.admin import admin_bp
     from .routes.invites import invites_bp
     from .routes.importer import importer_bp
+    from .routes.merit_badge import merit_badge_bp
 
     for bp in (auth_bp, federation_bp, main_bp,
-               courses_bp, admin_bp, importer_bp, invites_bp):
+               courses_bp, admin_bp, importer_bp, invites_bp, merit_badge_bp):
         app.register_blueprint(bp)
 
     return app

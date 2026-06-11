@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Import Merit Badge Worksheet{% endblock %}
+{% block content %}
+<div class="ma-breadcrumb">
+  <a href="{{ url_for('main.index') }}">Home</a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <span>Import Merit Badge</span>
+</div>
+
+<div style="max-width:700px;">
+  <div class="ma-card">
+    <div class="ma-card-header">
+      <i class="bi bi-patch-check-fill" style="color:var(--yellow);"></i>
+      Import Merit Badge Worksheet
+    </div>
+    <div class="ma-card-body">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px;">
+        Upload a BSA merit badge workbook (PDF or DOCX). The system will extract all numbered
+        requirements and create a course draft ready to edit and publish.
+      </p>
+
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:20px;">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">How it works:</div>
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+          <div><i class="bi bi-1-circle-fill" style="color:var(--accent);"></i> Upload the official BSA workbook PDF or DOCX</div>
+          <div><i class="bi bi-2-circle-fill" style="color:var(--accent);"></i> System extracts all requirements automatically</div>
+          <div><i class="bi bi-3-circle-fill" style="color:var(--accent);"></i> Each requirement becomes a lesson module</div>
+          <div><i class="bi bi-4-circle-fill" style="color:var(--accent);"></i> Review, edit, and publish to your CDDS catalog</div>
+          <div><i class="bi bi-5-circle-fill" style="color:var(--accent);"></i> LMS nodes can ingest and assign to Scouts</div>
+        </div>
+      </div>
+
+      <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="ma-form-group">
+          <label class="ma-label">Merit Badge Worksheet *</label>
+          <input type="file" name="worksheet" class="ma-input"
+                 accept=".pdf,.docx,.doc" required style="padding:6px;">
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
+            Accepted: PDF, DOCX · Official BSA workbooks from usscouts.org or meritbadge.org
+          </div>
+        </div>
+
+        <div style="background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.3);border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--cyan);">
+          <i class="bi bi-cpu-fill"></i>
+          Parsing runs on your local GPU via Ollama — no external API calls, fully sovereign.
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <a href="{{ url_for('main.index') }}" class="ma-btn ma-btn-ghost">Cancel</a>
+          <button type="submit" class="ma-btn ma-btn-primary">
+            <i class="bi bi-patch-check-fill"></i> Import Worksheet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="ma-card" style="border-color:rgba(245,158,11,.3);">
+    <div class="ma-card-header" style="color:var(--yellow);">
+      <i class="bi bi-info-circle-fill"></i> Copyright Note
+    </div>
+    <div class="ma-card-body" style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+      BSA merit badge workbooks are copyrighted by the Boy Scouts of America and the U.S. Scouting
+      Service Project. They may be reproduced and used locally by Scouts and Scouters for purposes
+      consistent with BSA programs. This importer is intended for local troop use only — do not
+      distribute imported courses publicly beyond your unit.
+    </div>
+  </div>
+</div>
+{% endblock %}
